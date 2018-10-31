@@ -8,6 +8,10 @@ Both Ansible and Puppet Bolt offer similar functionality: remote sys admin tasks
 | Authentication | SSH | SSH |
 | Remote Agent / Daemon Required | No | No |
 | Package source | Native CentOS 'extras' channel | Puppet Repo (non-native) |
+| Command execution | CLI | CLI |
+| Target options | Ansible 'hosts' inventory only | Option to pass host on command line |
+| Task management | "Ansible Playbooks" | "Tasks and Plans" |
+| Task execution | Ansible-provided modules ( shell, yum, etc.) | Bolt commands |
 
 
 ## Commands in-depth
@@ -63,4 +67,33 @@ Bolt
 <pre>
 sudo rpm -Uvh https://yum.puppet.com/puppet6/puppet6-release-el-6.noarch.rpm
 sudo yum install puppet-bolt
+</pre>
+
+### Running a simple command
+In this test, it appears Ansible does not support passing an FQDN on the command line.  The first step in executing the command is by updating the hosts inventory file then running a command with that as a reference.
+
+Ansible
+1. Update the Ansible hosts inventory:
+<pre>
+[root@control .ssh]# cat /etc/ansible/hosts
+[remote]
+    www.remote.com
+</pre>
+2. Run the remote command referencing the tagged hosts section:
+<pre>
+[root@control .ssh]# ansible remote -m shell -a '/bin/uname'
+www.remote.com | SUCCESS | rc=0 >>
+Linux
+</pre>
+
+Bolt
+1. You have the option to pass an FQDN right on the command line.
+<pre>
+[root@control .ssh]# bolt command run /bin/uname --nodes www.remote.com --user root
+Started on www.remote.com...
+Finished on www.remote.com:
+  STDOUT:
+    Linux
+Successful on 1 node: www.remote.com
+Ran on 1 node in 0.44 seconds
 </pre>
