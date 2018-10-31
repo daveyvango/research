@@ -1,6 +1,10 @@
 # Ansible and Puppet Bolt comparison
 
-Both Ansible and Puppet Bolt offer similar functionality: remote sys admin tasks over SSH using CLI tools.  This doc is aiming to provide and unbiased comparison of the two on CentOS 7
+Both Ansible and Puppet Bolt offer similar functionality: remote sys admin tasks over SSH using CLI tools.  This doc is aiming to provide and unbiased comparison of the two on CentOS 7.
+
+Almost all information has been gleaned from the Ansible and Bolt user documentation. <br />
+* [Welcome to Bolt](https://puppet.com/docs/bolt/1.x/bolt.html)
+* [Ansible User Guide](https://docs.ansible.com/ansible/latest/user_guide/)
 
 ## Overview of Features
 | Feature | Ansible | Bolt |
