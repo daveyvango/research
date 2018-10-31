@@ -1,6 +1,6 @@
 # Ansible and Puppet Bolt comparison
 
-Both Ansible and Puppet Bolt offer similar functionality: remote sys admin tasks over SSH using CLI tools.  This doc is aiming to provide and unbiased comparison of the two on CentOS 7.
+Both Ansible and Puppet Bolt offer similar functionality: remote sys admin tasks over SSH using CLI tools.  This doc is aiming to provide and unbiased comparison of the two on CentOS 7.  It is also a **WORK IN PROGRESS** and is the understanding of one person trying to explore the differences.  Best effort type stuff. :smile:
 
 Almost all information has been gleaned from the Ansible and Bolt user documentation. <br />
 * [Welcome to Bolt](https://puppet.com/docs/bolt/1.x/bolt.html)
@@ -13,8 +13,9 @@ Almost all information has been gleaned from the Ansible and Bolt user documenta
 | Remote Agent / Daemon Required | No | No |
 | Package source | Native CentOS 'extras' channel | Puppet Repo (non-native) |
 | Command execution | CLI | CLI |
-| Target options | Ansible 'hosts' inventory only | Option to pass host on command line |
+| Target options | Ansible 'hosts' inventory file | Option to pass host on command line, inside a Plan, a YAML inventory file |
 | Task management | "Ansible Playbooks" | "Tasks and Plans" |
+| Command Mechanism | An extensive collection of local modules that deal with the under-the-covers stuff | A few generic commands to execute everything such as 'command', 'file', 'script', 'plan', 'task', and 'apply'.  Relies on admin to develop scripting |
 | Task execution | Ansible-provided modules ( shell, yum, etc.) | Bolt commands |
 
 
