@@ -26,34 +26,35 @@ Both Ansible and Bolt to function as **agentless** admin tools over **SSH**.  Th
 
 ### Installation
 #### Ansible
-<code>sudo yum install ansible</code>
+`sudo yum install ansible`
 
 #### Bolt
-<pre>
+
+```shell
 sudo rpm -Uvh https://yum.puppet.com/puppet6/puppet6-release-el-6.noarch.rpm
 sudo yum install puppet-bolt
-</pre>
+```
 
 ### Running a simple command
 In this test, it appears Ansible does not support passing an FQDN on the command line.  The first step in executing the command is by updating the hosts inventory file then running a command with that as a reference.
 
 #### Ansible
 1. Update the Ansible hosts inventory:
-<pre>
+```shell
 [root@control .ssh]# cat /etc/ansible/hosts
 [remote]
     www.remote.com
-</pre>
+```
 2. Run the remote command referencing the tagged hosts section:
-<pre>
+```shell
 [root@control .ssh]# ansible remote -m shell -a '/bin/uname'
 www.remote.com | SUCCESS | rc=0 >>
 Linux
-</pre>
+```
 
 #### Bolt
 1. You have the option to pass an FQDN right on the command line.
-<pre>
+```shell
 [root@control .ssh]# bolt command run /bin/uname --nodes www.remote.com --user root
 Started on www.remote.com...
 Finished on www.remote.com:
@@ -61,13 +62,13 @@ Finished on www.remote.com:
     Linux
 Successful on 1 node: www.remote.com
 Ran on 1 node in 0.44 seconds
-</pre>
+```
 
 ### Task Parallelism
 For this test, I simply ran a sleep command to see if the cumulative time would be greater than the sleep time ran accross each node. <br />
 Note the execution time accross the 4 nodes was between not much more than 5 seconds, where each slept for 5 seconds.<br />
 #### Ansible
-<pre>
+```shell
 [root@control ~]# cat /etc/ansible/hosts
 [remote]
     www.remote.com
@@ -90,11 +91,10 @@ www.remote3.com | SUCCESS | rc=0 >>
 
 Thu Nov  1 10:56:14 CDT 2018
 [root@control ~]#
-</pre>
+```
 
-#### Bolt <br />
-
-<pre>
+#### Bolt
+```shell
 [root@control ~]# cat bolt.hosts
 www.remote.com
 www.remote2.com
@@ -120,14 +120,14 @@ Finished on www.remote3.com:
 Successful on 4 nodes: www.remote.com,www.remote2.com,www.remote3.com,www.remote4.com
 Ran on 4 nodes in 5.68 seconds
 [root@control ~]#
-</pre>
+```
 
 ### Running Collection of Tasks
 #### Ansible Playbook
 
 This situation is just a simple play against two collections of servers *remote_1* and *remote_2*.
 1. A quick look at the hosts list.
-<pre>
+```shell
 [root@control ~]# cat /etc/ansible/hosts
 [remote_1]
     www.remote.com
@@ -136,10 +136,9 @@ This situation is just a simple play against two collections of servers *remote_
     www.remote3.com
     www.remote4.com
 [root@control ~]#
-</pre>
-2. Our playbook is pretty simple.  We use *register* to get reference *stdout* later on in debug.
-<pre>
-[root@control ~]# cat playbook.yml
+```
+2. Our `playbook.yaml` is pretty simple.  We use *register* to get reference *stdout* later on in debug.
+```yaml
 ---
 - hosts: remote_1
   remote_user: root
@@ -159,9 +158,9 @@ This situation is just a simple play against two collections of servers *remote_
     command: /bin/uname
     register: uname
   - debug: msg="{{ uname.stdout }}"
-</pre>
+```
 3. Running the playbook
-<pre>
+```shell
 [root@control ~]# ansible-playbook playbook.yml
 
 PLAY [remote_1] ********************************************************************************************
@@ -209,12 +208,12 @@ www.remote.com             : ok=4    changed=1    unreachable=0    failed=0
 www.remote2.com            : ok=4    changed=1    unreachable=0    failed=0
 www.remote3.com            : ok=3    changed=1    unreachable=0    failed=0
 www.remote4.com            : ok=3    changed=1    unreachable=0    failed=0
-</pre>
+```
 
 ### Setting up ssh keys
 
 1. Create the keys with <code>ssh-keygen</code> on the **control** server:
-<pre>
+```shell
 [root@control ~]# mkdir ~/.ssh && chmod 700 ~/.ssh # if it doesn't exist
 [root@control ~]# cd ~/.ssh
 [root@control .ssh]# ssh-keygen -t rsa -b 2048 -f remote_commands
@@ -234,23 +233,23 @@ The key's randomart image is:
 [root@control .ssh]# ls -la remote_commands*
 -rw-------. 1 root root 1679 Oct 31 10:19 remote_commands
 -rw-r--r--. 1 root root  394 Oct 31 10:19 remote_commands.pub
-</pre>
+```
 NOTE: A password is not required.
 2.  Get the contents of the ONLY the **public** key.  **IMPORTANT: NEVER SHARE THE PRIVATE KEY!!!**
-<pre>
+```shell
 [root@control .ssh]# cat remote_commands.pub
 ssh-rsa ABC123(REDACTED A few hudred bites)XYZ root@control
-</pre>
+```
 3. Paste the contents of the **PUBLIC** key into the <code>authorized_keys</code> file on the **remote** server.
-<pre>
+```shell
 [root@remote ~]# mkdir ~/.ssh && chmod 700 ~/.ssh # if it doesn't exist
 [root@remote ~]# cd ~/.ssh
 [root@remote .ssh]# vim authorized_keys
 [root@remote .ssh]# cat authorized_keys
 ssh-rsa ABC123(REDACTED A few hudred bites)XYZ root@control
-</pre>
+```
 4. Test the connection from the **control** server to the **remote** server with a simple command.
-<pre>
+```shell
 [root@control .ssh]# ssh www.remote.com '/bin/uname'
 Linux
-</pre>
+```
