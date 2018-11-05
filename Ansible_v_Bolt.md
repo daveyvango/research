@@ -9,26 +9,26 @@ Almost all information has been gleaned from the Ansible and Bolt user documenta
 ## Overview of Features
 | Feature | Ansible | Bolt |
 | ------- | ------- | ---- |
-| Authentication | SSH | SSH |
-| Remote Agent / Daemon Required | No | No |
-| Package source | Native CentOS 'extras' channel | Puppet Repo (non-native) |
-| Command execution | CLI | CLI |
-| Target options | Ansible 'hosts' inventory file | Option to pass host on command line, inside a Plan, a YAML inventory file |
-| Task management | "Ansible Playbooks" | "Tasks and Plans" |
-| Command Mechanism | An extensive collection of local modules that deal with the under-the-covers stuff | A few generic commands to execute everything such as 'command', 'file', 'script', 'plan', 'task', and 'apply'.  Relies on admin to develop scripting |
-| Task wrappers | Ansible-provided modules ( shell, yum, etc.) | Bolt commands |
-| Parallel Tasks | Yes | Yes |
+| **Authentication** | SSH | SSH |
+| **Remote Agent / Daemon Required** | No | No |
+| **Package source** | Native CentOS 'extras' channel | Puppet Repo (non-native) |
+| **Command execution** | CLI | CLI |
+| **Target options** | Ansible 'hosts' inventory file | Option to pass host on command line, inside a Plan, a YAML inventory file |
+| **Task management** | "Ansible Playbooks" | "Tasks and Plans" |
+| **Command Mechanism** | An extensive collection of local modules that deal with the under-the-covers stuff | A few generic commands to execute everything such as 'command', 'file', 'script', 'plan', 'task', and 'apply'.  Relies on admin to develop scripting |
+| **Task wrappers** | Ansible-provided modules ( shell, yum, etc.) | Bolt commands |
+| **Parallel Tasks** | Yes | Yes |
 
 
 ## Commands in-depth
 ### Setup
-Both Ansible and Bolt to function as **agentless** admin tools over SSH.  This means, there is no daemon running on your remote systems waiting for commands.  There IS however, a control/origin/master server that is a centralized point for issuing commands remotely.  To function, you must first establish **SSH keys** for <code>root</code> or a privileged user.  Any remote servers' <code>~/.ssh/authorized_keys</code> file must have the **public key** from the SSH keypair on the control server.  There are plenty of tutorials online for how to get this done using <code>ssh-keygen</code>.  If you'd like, there is also a reference at the bottom of this page.  
+Both Ansible and Bolt to function as **agentless** admin tools over **SSH**.  This means, there is no daemon running on your remote systems waiting for commands.  There IS however, a control/origin/master server that is a centralized point for issuing commands remotely.  To function, you must first establish **SSH keys** for <code>root</code> or a privileged user.  Any remote servers' <code>~/.ssh/authorized_keys</code> file must have the **public key** from the SSH keypair on the control server.  There are plenty of tutorials online for how to get this done using <code>ssh-keygen</code>.  If you'd like, there is also a reference at the bottom of this page.
 
 ### Installation
-Ansible
+#### Ansible
 <code>sudo yum install ansible</code>
 
-Bolt
+#### Bolt
 <pre>
 sudo rpm -Uvh https://yum.puppet.com/puppet6/puppet6-release-el-6.noarch.rpm
 sudo yum install puppet-bolt
@@ -37,7 +37,7 @@ sudo yum install puppet-bolt
 ### Running a simple command
 In this test, it appears Ansible does not support passing an FQDN on the command line.  The first step in executing the command is by updating the hosts inventory file then running a command with that as a reference.
 
-Ansible
+#### Ansible
 1. Update the Ansible hosts inventory:
 <pre>
 [root@control .ssh]# cat /etc/ansible/hosts
@@ -51,7 +51,7 @@ www.remote.com | SUCCESS | rc=0 >>
 Linux
 </pre>
 
-Bolt
+#### Bolt
 1. You have the option to pass an FQDN right on the command line.
 <pre>
 [root@control .ssh]# bolt command run /bin/uname --nodes www.remote.com --user root
@@ -66,7 +66,7 @@ Ran on 1 node in 0.44 seconds
 ### Task Parallelism
 For this test, I simply ran a sleep command to see if the cumulative time would be greater than the sleep time ran accross each node. <br />
 Note the execution time accross the 4 nodes was between not much more than 5 seconds, where each slept for 5 seconds.<br />
-Ansible <br />
+#### Ansible
 <pre>
 [root@control ~]# cat /etc/ansible/hosts
 [remote]
@@ -92,7 +92,7 @@ Thu Nov  1 10:56:14 CDT 2018
 [root@control ~]#
 </pre>
 
-Bolt <br />
+#### Bolt <br />
 
 <pre>
 [root@control ~]# cat bolt.hosts
