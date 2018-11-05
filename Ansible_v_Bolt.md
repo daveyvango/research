@@ -15,7 +15,8 @@ Almost all information has been gleaned from the Ansible and Bolt user documenta
 | **Command execution** | CLI | CLI |
 | **Target options** | Ansible 'hosts' inventory file | Option to pass host on command line, inside a Plan, a YAML inventory file |
 | **Task management** | "Ansible Playbooks" | "Tasks and Plans" |
-| **Command Mechanism** | An extensive collection of local modules that deal with the under-the-covers stuff | A few generic commands to execute everything such as 'command', 'file', 'script', 'plan', 'task', and 'apply'.  Relies on admin to develop scripting |
+| **Command Mechanism** | An extensive collection of local modules that deal with the under-the-covers stuff | A few generic commands to execute everything such as 'command', 'file', 'script', 'plan', 'task', and 'apply'.  There are also some Puppet-provided modules such as 'package' and 'service'.  At this time, Bolt Relies on admin to develop scripting |
+| **Collection of Native Modules** | 100's | 10's |
 | **Task wrappers** | Ansible-provided modules ( shell, yum, etc.) | Bolt commands |
 | **Parallel Tasks** | Yes | Yes |
 
