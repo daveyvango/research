@@ -122,6 +122,95 @@ Ran on 4 nodes in 5.68 seconds
 [root@control ~]#
 </pre>
 
+### Running Collection of Tasks
+#### Ansible Playbook
+
+This situation is just a simple play against two collections of servers *remote_1* and *remote_2*.
+1. A quick look at the hosts list.
+<pre>
+[root@control ~]# cat /etc/ansible/hosts
+[remote_1]
+    www.remote.com
+    www.remote2.com
+[remote_2]
+    www.remote3.com
+    www.remote4.com
+[root@control ~]#
+</pre>
+2. Our playbook is pretty simple.  We use *register* to get reference *stdout* later on in debug.
+<pre>
+[root@control ~]# cat playbook.yml
+---
+- hosts: remote_1
+  remote_user: root
+  tasks:
+  - name: ensure openssl is up-to-date
+    yum:
+      name: openssl
+      state: latest
+  - name: echo openssl version
+    shell: /bin/openssl version
+    register: openssl_ver
+  - debug: msg="{{ openssl_ver.stdout }}"
+- hosts: remote_2
+  remote_user: root
+  tasks:
+  - name: get the uname
+    command: /bin/uname
+    register: uname
+  - debug: msg="{{ uname.stdout }}"
+</pre>
+3. Running the playbook
+<pre>
+[root@control ~]# ansible-playbook playbook.yml
+
+PLAY [remote_1] ********************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************
+ok: [www.remote.com]
+ok: [www.remote2.com]
+
+TASK [ensure openssl is up-to-date] ************************************************************************
+ok: [www.remote2.com]
+ok: [www.remote.com]
+
+TASK [echo openssl version] ********************************************************************************
+changed: [www.remote.com]
+changed: [www.remote2.com]
+
+TASK [debug] ***********************************************************************************************
+ok: [www.remote.com] => {
+    "msg": "OpenSSL 1.0.2k-fips  26 Jan 2017"
+}
+ok: [www.remote2.com] => {
+    "msg": "OpenSSL 1.0.2k-fips  26 Jan 2017"
+}
+
+PLAY [remote_2] ********************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************
+ok: [www.remote4.com]
+ok: [www.remote3.com]
+
+TASK [get the uname] ***************************************************************************************
+changed: [www.remote4.com]
+changed: [www.remote3.com]
+
+TASK [debug] ***********************************************************************************************
+ok: [www.remote3.com] => {
+    "msg": "Linux"
+}
+ok: [www.remote4.com] => {
+    "msg": "Linux"
+}
+
+PLAY RECAP *************************************************************************************************
+www.remote.com             : ok=4    changed=1    unreachable=0    failed=0
+www.remote2.com            : ok=4    changed=1    unreachable=0    failed=0
+www.remote3.com            : ok=3    changed=1    unreachable=0    failed=0
+www.remote4.com            : ok=3    changed=1    unreachable=0    failed=0
+</pre>
+
 ### Setting up ssh keys
 
 1. Create the keys with <code>ssh-keygen</code> on the **control** server:
