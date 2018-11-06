@@ -19,6 +19,7 @@ Almost all information has been gleaned from the Ansible and Bolt user documenta
 | **Collection of Native Modules** | 100's | 10's |
 | **Task wrappers** | Ansible-provided modules ( shell, yum, etc.) | Bolt commands |
 | **Parallel Tasks** | Yes | Yes |
+| **Ease of Bundling Tasks** | Not too bad.  Knowing YAML well is they key.  Everything is done in YAML | A bit of overhead and scripting mindset is required.  Seems a bit cumbersome, but much easier to read |
 
 
 ## Commands in-depth
@@ -209,6 +210,56 @@ www.remote.com             : ok=4    changed=1    unreachable=0    failed=0
 www.remote2.com            : ok=4    changed=1    unreachable=0    failed=0
 www.remote3.com            : ok=3    changed=1    unreachable=0    failed=0
 www.remote4.com            : ok=3    changed=1    unreachable=0    failed=0
+```
+#### Bolt
+Bolt requires you learn the Puppet language to write plans.  It's doable if you're a decent scripter.  In order to parse the returned data from query-like tasks, it's important to have a grasp on iterating and understanding returned data structures.
+
+1. First you have to create a module to house your plans.  My example is `boltmodule` with my plan named `example`.  It's helpful in this step to be familiar with Puppet organization. Note the contents of ```boltmodule/plans/example.pp``` below; there are many more keystrokes to accomplish the same tasks as the Ansible example above.  There's a trade-off here: more charactes, but greater flexibility (i.e. looping and logic checks).
+```puppet
+plan boltmodule::example(){
+  $remotes_1 = ['www.remote.com', 'www.remote2.com']
+  $p = run_task('package', $remotes_1, action => 'upgrade', name => 'openssl')
+  $p.each |$result| {
+    $node = $result.target.name
+    if $result.ok {
+      $res = $result.value
+      notice("${node} returned:\n  ${res}")
+    } else {
+      notice("${node} errored with a message: ${result.error.message}")
+    }
+  }
+  $remotes_2 = ['www.remote3.com', 'www.remote4.com']
+  $f = run_command('/bin/uname', $remotes_2)
+  $f.each |$result| {
+    $node = $result.target.name
+    if $result.ok {
+      $res = $result.value
+      notice("${node} returned:\n  ${res}")
+    } else {
+      notice("${node} errored with a message: ${result.error.message}")
+    }
+  }
+}
+```
+2. Run the plan:
+```shell
+[root@control ~]# bolt plan run boltmodule::example --modulepath ./ --user=root --no-host-key-check
+Starting: plan boltmodule::example
+Starting: task package on www.remote.com, www.remote2.com
+Finished: task package with 0 failures in 3.14 sec
+www.remote.com returned:
+  {old_version => 1:1.0.2k-12.el7, version => 1:1.0.2k-12.el7}
+www.remote2.com returned:
+  {old_version => 1:1.0.2k-12.el7, version => 1:1.0.2k-12.el7}
+Starting: command '/bin/uname' on www.remote3.com, www.remote4.com
+Finished: command '/bin/uname' with 0 failures in 0.52 sec
+www.remote3.com returned:
+  {stdout => Linux
+, stderr => , exit_code => 0}
+www.remote4.com returned:
+  {stdout => Linux
+, stderr => , exit_code => 0}
+Finished: plan boltmodule::example in 3.68 sec
 ```
 
 ### Setting up ssh keys
