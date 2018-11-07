@@ -14,21 +14,21 @@ Almost all information has been gleaned from the Ansible and Bolt user documenta
 | **Remote Agent / Daemon Required** | No | No |
 | **Package source** | Native CentOS 'extras' channel | Puppet Repo (non-native) |
 | **Command execution** | CLI | CLI |
-| **Target options** | Ansible 'hosts' inventory file | Option to pass host on command line, inside a Plan, a YAML inventory file |
+| **Target options** | Ansible 'hosts' inventory file | Option to pass host on command line, inside a Plan, a plain text inventory file |
 | **Task management** | "Ansible Playbooks" | "Tasks and Plans" |
-| **Command Mechanism** | An extensive collection of local modules that deal with the under-the-covers stuff | A few generic commands to execute everything such as 'command', 'file', 'script', 'plan', 'task', and 'apply'.  There are also some Puppet-provided modules such as 'package' and 'service'.  At this time, Bolt Relies on admin to develop scripting |
+| **Command Mechanism** | An extensive collection of local modules that deal with the under-the-covers stuff | A few generic commands to execute everything such as 'command', 'file', 'script', 'plan', 'task', and 'apply'.  There are also some Puppet-provided modules such as 'package' and 'service'.  At this time, Bolt relies on admin to develop scripting |
 | **Collection of Native Modules** | 100's | 10's |
 | **Task wrappers** | Ansible-provided modules ( shell, yum, etc.) | Bolt commands |
 | **Parallel Tasks** | Yes | Yes |
-| **Ease of Bundling Tasks** | Not too bad.  Knowing YAML well is they key.  Everything is done in YAML | A bit of overhead and scripting mindset is required.  Seems a bit cumbersome, but much easier to read |
-| **Custom Modules / Tasks** | Although largely unrequired because of the vast collection of Ansible modules available, writing a custom one is a bit tedious and is limited to Python, Powershell, and/or small binaries.  Strict guidelines are in place for development. | Quite flexible.  As this is the primary means of implementing useful tasks with Bolt, any language is supported provided that language is supported on the remote system. |
+| **Ease of Bundling Tasks** | Not too bad.  Knowing YAML well is the key.  Everything is done in YAML | A bit of overhead and scripting mindset is required.  Seems a bit cumbersome, but much easier to read |
+| **Custom Modules / Tasks** | Although largely unrequired because of the vast collection of Ansible modules available, writing a custom one is a bit tedious and is limited to Python, Powershell, and/or small binaries.  Strict guidelines are in place for development. | Quite flexible.  As this is the primary means of implementing useful tasks with Bolt, any language is supported provided that language is supported on the remote system.  Scripts can be as simple or complex as you'd like |
 
 **Which one then?** <br />
-There's no clear "winner".  If the collection of commands you expect to run are common like 'yum' and 'package' or even less common ones listed in [Ansible Modules Index](https://docs.ansible.com/ansible/2.5/modules/modules_by_category.html), Ansible will work nicely.  If you're looking for maybe more customizable task creation with various languages other than Python, Bolt would be a great option.  That's my take.
+There's no clear "winner".  Ansible will work nicely if the collection of commands you expect to run are common like 'yum' and 'package' or even less common ones listed in [Ansible Modules Index](https://docs.ansible.com/ansible/2.5/modules/modules_by_category.html).  If you're looking for maybe more customizable task creation with various languages other than Python, Bolt would be a great option.  That's my take.
 
 ## Commands in-depth
 ### Setup
-Both Ansible and Bolt to function as **agentless** admin tools over **SSH**.  This means, there is no daemon running on your remote systems waiting for commands.  There IS however, a control/origin/master server that is a centralized point for issuing commands remotely.  To function, you must first establish **SSH keys** for <code>root</code> or a privileged user.  Any remote servers' <code>~/.ssh/authorized_keys</code> file must have the **public key** from the SSH keypair on the control server.  There are plenty of tutorials online for how to get this done using <code>ssh-keygen</code>.  If you'd like, there is also a reference at the bottom of this page.
+Both Ansible and Bolt to function as **agentless** admin tools over **SSH**.  This means there is no daemon running on your remote systems waiting for commands.  There IS however, a control/origin/master server that is a centralized point for issuing commands remotely.  To function, you must first establish **SSH keys** for <code>root</code> or a privileged user.  Any remote servers' <code>~/.ssh/authorized_keys</code> file must have the **public key** from the SSH keypair on the control server.  There are plenty of tutorials online for how to get this done using <code>ssh-keygen</code>.  If you'd like, there is also a reference at the bottom of this page.
 
 ### Installation
 #### Ansible
@@ -59,7 +59,8 @@ Linux
 ```
 
 #### Bolt
-1. You have the option to pass an FQDN right on the command line.
+Bolt allows you to pass nodes right on the command line:
+
 ```shell
 [root@control .ssh]# bolt command run /bin/uname --nodes www.remote.com --user root
 Started on www.remote.com...
@@ -69,10 +70,42 @@ Finished on www.remote.com:
 Successful on 1 node: www.remote.com
 Ran on 1 node in 0.44 seconds
 ```
+Or, there is also an option to specify a collection of hosts in a plain text file.
+1. Create an inventory file `bolt.hosts`.
+```shell
+[root@control ~]# cat bolt.hosts
+www.remote.com
+www.remote2.com
+www.remote3.com
+www.remote4.com
+```
+2. Pass that inventory file to the command line.
+```shell
+[root@control ~]# bolt command run '/bin/uname' --nodes=@bolt.hosts --no-host-key-check --user=root
+Started on www.remote.com...
+Started on www.remote4.com...
+Started on www.remote2.com...
+Started on www.remote3.com...
+Finished on www.remote4.com:
+  STDOUT:
+    Linux
+Finished on www.remote.com:
+  STDOUT:
+    Linux
+Finished on www.remote2.com:
+  STDOUT:
+    Linux
+Finished on www.remote3.com:
+  STDOUT:
+    Linux
+Successful on 4 nodes: www.remote.com,www.remote2.com,www.remote3.com,www.remote4.com
+Ran on 4 nodes in 0.74 seconds
+[root@control ~]#
+```
 
 ### Task Parallelism
 For this test, I simply ran a sleep command to see if the cumulative time would be greater than the sleep time ran accross each node. <br />
-Note the execution time accross the 4 nodes was between not much more than 5 seconds, where each slept for 5 seconds.<br />
+Note the execution time accross the 4 nodes was between 5 and 6 seconds, where each slept for 5 seconds.
 #### Ansible
 ```shell
 [root@control ~]# cat /etc/ansible/hosts
@@ -218,7 +251,7 @@ www.remote4.com            : ok=3    changed=1    unreachable=0    failed=0
 #### Bolt
 Bolt requires you learn the Puppet language to write plans.  It's doable if you're a decent scripter.  In order to parse the returned data from query-like tasks, it's important to have a grasp on iterating and understanding returned data structures.
 
-1. First you have to create a module to house your plans.  My example is `boltmodule` with my plan named `example`.  It's helpful in this step to be familiar with Puppet organization. Note the contents of ```boltmodule/plans/example.pp``` below; there are many more keystrokes to accomplish the same tasks as the Ansible example above.  There's a trade-off here: more charactes, but greater flexibility (i.e. looping and logic checks).
+1. First you have to create a module to house your plans.  My example is `boltmodule` with my plan named `example`.  It's helpful in this step to be familiar with Puppet organization. Note the contents of ```boltmodule/plans/example.pp``` below; there are many more keystrokes to accomplish the same tasks as the Ansible example above.  There's a trade-off here: more keystrokes, but greater flexibility (i.e. looping and logic checks) and it reads like a script.
 ```puppet
 plan boltmodule::example(){
   $remotes_1 = ['www.remote.com', 'www.remote2.com']
@@ -287,7 +320,7 @@ Ran on 1 node in 0.76 seconds
 ```
 
 #### Ansible
-A custom module wasn't built for this excersize.  For more information, check out [Ansible Module Development Walkthrough](https://docs.ansible.com/ansible/2.5/dev_guide/developing_modules_general.html#new-module-development)
+A custom module was not built for this exersize.  For more information, check out [Ansible Module Development Walkthrough](https://docs.ansible.com/ansible/2.5/dev_guide/developing_modules_general.html#new-module-development)
 
 
 ### Setting up ssh keys
