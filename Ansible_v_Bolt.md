@@ -20,6 +20,7 @@ Almost all information has been gleaned from the Ansible and Bolt user documenta
 | **Task wrappers** | Ansible-provided modules ( shell, yum, etc.) | Bolt commands |
 | **Parallel Tasks** | Yes | Yes |
 | **Ease of Bundling Tasks** | Not too bad.  Knowing YAML well is they key.  Everything is done in YAML | A bit of overhead and scripting mindset is required.  Seems a bit cumbersome, but much easier to read |
+| **Custom Modules / Tasks** | Although largely unrequired because of the vast collection of Ansible modules available, writing a custom one is a bit tedious and is limited to Python, Powershell, and/or small binaries.  Strict guidelines are in place for development. | Quite flexible.  As this is the primary means of implementing useful tasks with Bolt, any language is supported provided that language is supported on the remote system. |
 
 
 ## Commands in-depth
@@ -261,6 +262,30 @@ www.remote4.com returned:
 , stderr => , exit_code => 0}
 Finished: plan boltmodule::example in 3.68 sec
 ```
+### Custom Modules/Tasks
+Between the two of them, Bolt is much easier and more flexible for setting up custom tasks right out of the gate.  It allows you to write them in any language that will run on a target host (bash, python, perl, etc.).  You do need to have the tasks within a module though, another Puppet-style convention.  Ansible requires more formal development and has to be written in Python or a compiled binary file.  On the other hand, many tasks are already coded in Ansible modules readily available from the community.  
+
+#### Bolt
+Here's a quick example for getting the uname:
+```shell
+[root@control ~]# cat boltmodule/tasks/mytask.sh
+#!/bin/bash
+
+/bin/uname
+[root@control ~]# bolt task run boltmodule::mytask --modulepath ./ --user=root --no-host-key-check --nodes='www.remote.com'
+Started on www.remote.com...
+Finished on www.remote.com:
+  Linux
+  {
+  }
+Successful on 1 node: www.remote.com
+Ran on 1 node in 0.76 seconds
+[root@control ~]
+```
+
+#### Ansible
+
+
 
 ### Setting up ssh keys
 
