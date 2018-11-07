@@ -1,6 +1,6 @@
 # Ansible and Puppet Bolt comparison
 
-Both Ansible and Puppet Bolt offer similar functionality: remote sys admin tasks over SSH using CLI tools.  This doc is aiming to provide and unbiased comparison of the two on CentOS 7.  It is also a **WORK IN PROGRESS** and is the understanding of one person trying to explore the differences.  Best effort type stuff. :smile:
+Both Ansible and Puppet Bolt offer similar functionality: remote sys admin tasks over SSH using CLI tools.  This doc is aiming to provide and unbiased comparison of the two on CentOS 7.  It is also the understanding of one person trying to explore the differences.  Best effort type stuff.
 
 Almost all information has been gleaned from the Ansible and Bolt user documentation. <br />
 * [Welcome to Bolt](https://puppet.com/docs/bolt/1.x/bolt.html)
@@ -9,6 +9,7 @@ Almost all information has been gleaned from the Ansible and Bolt user documenta
 ## Overview of Features
 | Feature | Ansible | Bolt |
 | ------- | ------- | ---- |
+| **Release Year** | 2012 | 2017 |
 | **Authentication** | SSH | SSH |
 | **Remote Agent / Daemon Required** | No | No |
 | **Package source** | Native CentOS 'extras' channel | Puppet Repo (non-native) |
@@ -22,6 +23,8 @@ Almost all information has been gleaned from the Ansible and Bolt user documenta
 | **Ease of Bundling Tasks** | Not too bad.  Knowing YAML well is they key.  Everything is done in YAML | A bit of overhead and scripting mindset is required.  Seems a bit cumbersome, but much easier to read |
 | **Custom Modules / Tasks** | Although largely unrequired because of the vast collection of Ansible modules available, writing a custom one is a bit tedious and is limited to Python, Powershell, and/or small binaries.  Strict guidelines are in place for development. | Quite flexible.  As this is the primary means of implementing useful tasks with Bolt, any language is supported provided that language is supported on the remote system. |
 
+**Which one then?** <br />
+There's no clear "winner".  If the collection of commands you expect to run are common like 'yum' and 'package' or even less common ones listed in [Ansible Modules Index](https://docs.ansible.com/ansible/2.5/modules/modules_by_category.html), Ansible will work nicely.  If you're looking for maybe more customizable task creation with various languages other than Python, Bolt would be a great option.  That's my take.
 
 ## Commands in-depth
 ### Setup
@@ -284,7 +287,7 @@ Ran on 1 node in 0.76 seconds
 ```
 
 #### Ansible
-
+A custom module wasn't built for this excersize.  For more information, check out [Ansible Module Development Walkthrough](https://docs.ansible.com/ansible/2.5/dev_guide/developing_modules_general.html#new-module-development)
 
 
 ### Setting up ssh keys
