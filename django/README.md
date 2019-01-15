@@ -20,7 +20,7 @@ sudo ./setup.sh
 ```
 . /opt/rh/rh-python35/enable
 ```
-6. Start it up! (note: address any errors that might occur such as migration to apply)
+3. Start it up! (note: address any errors that might occur such as migration to apply)
 ```
 # Only allow this process the ability to bind to be accessible to 8000 for now.  Probably reverse proxy later
 sudo firewall-cmd --add-port=8000/tcp
