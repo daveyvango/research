@@ -17,6 +17,9 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
+    # Order matters here
+    # Only the URL path AFTER the path match gets sent on
+    # i.e. 'polls/1/detail' gets sent as '1/detail' to polls.urls
     path('polls/', include('polls.urls')),
     path('admin/', admin.site.urls),
 ]
